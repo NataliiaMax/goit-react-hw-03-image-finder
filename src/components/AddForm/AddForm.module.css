@@ -1,0 +1,17 @@
+.containerInput {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.buttonForm {
+  display: block;
+  padding: 5px 15px;
+  margin: 0 auto;
+  background-color: #fff;
+  border: 1px solid #747474;
+  border-radius: 5px;
+  font-weight: 700;
+  color: #555;
+  cursor: pointer;
+}
