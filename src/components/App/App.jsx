@@ -1,61 +1,79 @@
 import React from 'react';
-import ContactForm from '../AddForm/AddForm';
-import ContactList from '../ContactList/ContactList';
-import Filter from '../Filter/Filter';
-import { nanoid } from 'nanoid';
-import style from './App.module.css';
+import { ToastContainer, toast } from 'react-toastify';
+import fetchGallery from 'components/API/API';
+import Searchbar from '../Searchbar/Searchbar';
+import ImageGallery from '../ImageGallery/ImageGallery';
+import Button from 'components/Button/Button';
+import Loader from 'components/Loader/Loader';
 
 class App extends React.Component {
   state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: '',
+    images: [],
+    query: '',
+    page: 1,
+    status: 'idle',
+    showButton: false,
   };
 
-  addUser = data => {
-    const { contacts } = this.state;
-    const newUser = {
-      ...data,
-      id: nanoid(),
-    };
-
-    if (
-      contacts.find(el => el.name.toLowerCase() === data.name.toLowerCase())
-    ) {
-      return alert(`${data.name} is already in contacts.`);
+  handleFormSubmit = query => {
+    if (query === this.state.query) {
+      return;
     }
-
-    this.setState(prevState => ({
-      contacts: [newUser, ...prevState.contacts],
-    }));
+    this.setState({
+      query,
+      page: 1,
+      images: [],
+      showButton: false,
+      status: 'idle',
+    });
   };
 
-  deleteUser = userId => {
-    this.setState(prevSate => ({
-      contacts: prevSate.contacts.filter(({ id }) => id !== userId),
-    }));
+  loadMoreImages = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
-  changeFilter = event => {
-    this.setState({ filter: event.currentTarget.value });
-  };
+  componentDidUpdate(prevProps,prevState) {
+    const prevName = prevState.query;
+    const nextName = this.state.query;
+    const prevPage = prevState.page;
+    const nextPage = this.state.page;
+
+    if (prevName !== nextName || prevPage !== nextPage) {try{
+      this.setState({ status: 'pending' });
+      fetchGallery(nextName, nextPage)
+        .then(images => {
+          if (images.hits.length > 1) {
+            this.setState({ showButton:false, status: 'idle' });
+            return toast.error('No images on your query!');
+          }
+          this.setState(prevState => ({
+            images: [...prevState.images, ...images.hits],
+          }));
+          this.setState({
+            status: 'resolved',
+            showButton:
+              this.state.page < Math.ceil(images.total / 12) ? true : false,
+          });
+        })}
+        catch(error){this.setState({error, status: 'rejected'}) };
+    }
+  }
 
   render() {
-    const { contacts, filter } = this.state;
-    const visibleContacts = contacts.filter(contact =>
-      contact.name.toLowerCase().includes(filter.toLowerCase().trim())
-    );
+    const { images, status, showButton } = this.state;
     return (
-      <div className={style.container}>
-        <h1 className={style.titleBook}>Phonebook</h1>
-        <ContactForm addUser={this.addUser} />
-        <h2 className={style.titleContacts}>Contacts</h2>
-        <Filter value={filter} onChange={this.changeFilter} />
-        <ContactList contacts={visibleContacts} deleteUser={this.deleteUser} />
+      <div>
+        <Searchbar submit={this.handleFormSubmit}></Searchbar>
+        {status === 'pending' && <Loader />}
+        {images.length > 0 && (
+          <ImageGallery images={this.images}></ImageGallery>
+        )}
+        {showButton && <Button onLoadMore={this.loadMoreImages}></Button>}
+        <ToastContainer
+          position="top-center"
+          autoClose={3000}
+          theme="colored"
+        />
       </div>
     );
   }
