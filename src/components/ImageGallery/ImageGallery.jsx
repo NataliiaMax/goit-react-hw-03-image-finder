@@ -2,14 +2,18 @@ import style from './ImageGallery.module.css';
 import PropTypes from 'prop-types';
 import ImageGalleryItem from 'components/ImageGalleryItem/ImageGalleryItem';
 
-const ImageGallery = ({images,openModal}) => {
+const ImageGallery = ({ images, openModal }) => {
   return (
     <ul className={style.gallery}>
-      {images.map(({ name, id, webformatURL,index }) => {
-        return (
-          <ImageGalleryItem name={name} key={id} webformatURL={webformatURL} index={index} openModal={openModal} />
-        );
-      })}
+      {images?.map(({ tags, id, webformatURL, largeImageURL }) => (
+        <ImageGalleryItem
+          tags={tags}
+          key={id}
+          webformatURL={webformatURL}
+          largeImageURL={largeImageURL}
+          openModal={openModal}
+        />
+      ))}
     </ul>
   );
 };
@@ -17,12 +21,13 @@ const ImageGallery = ({images,openModal}) => {
 ImageGallery.propTypes = {
   images: PropTypes.arrayOf(
     PropTypes.shape({
-      name: PropTypes.string.isRequired,
+      tags: PropTypes.string.isRequired,
       webformatURL: PropTypes.string.isRequired,
-      id: PropTypes.string.isRequired,
+      largeImageURL: PropTypes.string.isRequired,
+      id: PropTypes.number.isRequired,
     })
   ).isRequired,
-  openModal:PropTypes.func.isRequired
+  openModal: PropTypes.func.isRequired,
 };
 
 export default ImageGallery;

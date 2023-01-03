@@ -1,14 +1,6 @@
-.container {
-  width: 400px;
-  margin: 40px auto 0;
-  padding: 30px;
-  background-color: lightslategray;
-  border-radius: 10px;
-  border: 3px solid black;
-}
-
-.titleBook,
-.titleContacts {
-  text-align: center;
-  text-transform: uppercase;
+.App {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 16px;
+  padding-bottom: 24px;
 }

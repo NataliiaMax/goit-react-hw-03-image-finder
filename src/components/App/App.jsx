@@ -1,18 +1,24 @@
 import React from 'react';
 import { ToastContainer, toast } from 'react-toastify';
-import fetchGallery from 'components/API/API';
+import 'react-toastify/dist/ReactToastify.css';
+import { queryValues, fetchGallery } from 'components/API/API';
 import Searchbar from '../Searchbar/Searchbar';
 import ImageGallery from '../ImageGallery/ImageGallery';
 import Button from 'components/Button/Button';
 import Loader from 'components/Loader/Loader';
+import Modal from 'components/Modal/Modal';
 
 class App extends React.Component {
   state = {
     images: [],
     query: '',
     page: 1,
+    error: null,
     status: 'idle',
     showButton: false,
+    largeImageURL: '',
+    showModal: false,
+    tags: '',
   };
 
   handleFormSubmit = query => {
@@ -23,7 +29,7 @@ class App extends React.Component {
       query,
       page: 1,
       images: [],
-      showButton: false,
+      showButton: true,
       status: 'idle',
     });
   };
@@ -32,43 +38,79 @@ class App extends React.Component {
     this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
-  componentDidUpdate(prevProps,prevState) {
+  componentDidUpdate(prevProps, prevState) {
     const prevName = prevState.query;
     const nextName = this.state.query;
     const prevPage = prevState.page;
     const nextPage = this.state.page;
 
-    if (prevName !== nextName || prevPage !== nextPage) {try{
-      this.setState({ status: 'pending' });
-      fetchGallery(nextName, nextPage)
-        .then(images => {
-          if (images.hits.length > 1) {
-            this.setState({ showButton:false, status: 'idle' });
-            return toast.error('No images on your query!');
-          }
-          this.setState(prevState => ({
-            images: [...prevState.images, ...images.hits],
-          }));
-          this.setState({
-            status: 'resolved',
-            showButton:
-              this.state.page < Math.ceil(images.total / 12) ? true : false,
-          });
-        })}
-        catch(error){this.setState({error, status: 'rejected'}) };
+    if (prevName !== nextName || prevPage !== nextPage) {
+      this.renderGallery();
     }
   }
 
+  renderGallery = async () => {
+    const { query, page } = this.state;
+    this.setState({ status: 'pending' });
+    try {
+      const { hits, totalHits } = await fetchGallery(query, page);
+
+      if (totalHits === 0) {
+        this.setState({ showButton: false, status: 'idle' });
+        return toast.warn('No images on your query!');
+      }
+      const newImages = queryValues(hits);
+      this.setState(({ images }) => ({
+        images: [...images, ...newImages],
+        totalHits,
+      }));
+      this.setState({
+        status: 'resolved',
+        showButton: true,
+      });
+    } catch (error) {
+      this.setState({ error, status: 'rejected' });
+      toast.error('Oops... Something went wrong');
+    } finally {
+      this.setState({ status: 'idle' });
+    }
+  };
+
+  openModal = (largeImageURL, tags) => {
+    this.toggleModal();
+    this.setState({
+      largeImageURL,
+      tags,
+    });
+  };
+
+  toggleModal = () => {
+    this.setState(({ showModal }) => ({
+      showModal: !showModal,
+    }));
+  };
+
   render() {
-    const { images, status, showButton } = this.state;
+    const { images, status, showButton, largeImageURL, tags, showModal } =
+      this.state;
     return (
       <div>
-        <Searchbar submit={this.handleFormSubmit}></Searchbar>
+        <Searchbar onSubmit={this.handleFormSubmit}></Searchbar>
         {status === 'pending' && <Loader />}
         {images.length > 0 && (
-          <ImageGallery images={this.images}></ImageGallery>
+          <ImageGallery
+            images={images}
+            openModal={this.openModal}
+          ></ImageGallery>
         )}
         {showButton && <Button onLoadMore={this.loadMoreImages}></Button>}
+        {showModal && (
+          <Modal
+            onModalClick={this.toggleModal}
+            largeImageURL={largeImageURL}
+            tags={tags}
+          />
+        )}
         <ToastContainer
           position="top-center"
           autoClose={3000}
