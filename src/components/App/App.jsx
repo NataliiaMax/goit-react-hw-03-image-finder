@@ -29,7 +29,7 @@ class App extends React.Component {
       query,
       page: 1,
       images: [],
-      showButton: true,
+      showButton: false,
       status: 'idle',
     });
   };
