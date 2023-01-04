@@ -2,8 +2,8 @@ import React from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { queryValues, fetchGallery } from 'components/API/API';
-import Searchbar from '../Searchbar/Searchbar';
-import ImageGallery from '../ImageGallery/ImageGallery';
+import Searchbar from '../components/Searchbar/Searchbar';
+import ImageGallery from '../components/ImageGallery/ImageGallery';
 import Button from 'components/Button/Button';
 import Loader from 'components/Loader/Loader';
 import Modal from 'components/Modal/Modal';
@@ -96,13 +96,13 @@ class App extends React.Component {
     return (
       <div>
         <Searchbar onSubmit={this.handleFormSubmit}></Searchbar>
-        {status === 'pending' && <Loader />}
         {images.length > 0 && (
           <ImageGallery
             images={images}
             openModal={this.openModal}
           ></ImageGallery>
-        )}
+        )}{' '}
+        {status === 'pending' && <Loader />}
         {showButton && <Button onLoadMore={this.loadMoreImages}></Button>}
         {showModal && (
           <Modal

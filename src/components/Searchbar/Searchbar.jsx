@@ -6,6 +6,7 @@ import { ImSearch } from 'react-icons/im';
 import PropTypes from 'prop-types';
 
 class Searchbar extends React.Component {
+  static propTypes = { onSubmit: PropTypes.func.isRequired };
   state = {
     query: '',
   };
@@ -52,9 +53,5 @@ class Searchbar extends React.Component {
     );
   }
 }
-
-Searchbar.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};
 
 export default Searchbar;

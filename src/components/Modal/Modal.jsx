@@ -3,6 +3,11 @@ import style from './Modal.module.css';
 import PropTypes from 'prop-types';
 
 class Modal extends React.Component {
+  static propTypes = {
+    largeImageURL: PropTypes.string.isRequired,
+    tags: PropTypes.string.isRequired,
+    onModalClick: PropTypes.func.isRequired,
+  };
   componentDidMount() {
     window.addEventListener('keydown', this.onKeyDown);
   }
@@ -34,11 +39,5 @@ class Modal extends React.Component {
     );
   }
 }
-
-Modal.propTypes = {
-  largeImageURL: PropTypes.string.isRequired,
-  tags: PropTypes.string.isRequired,
-  onModalClick: PropTypes.func.isRequired,
-};
 
 export default Modal;
